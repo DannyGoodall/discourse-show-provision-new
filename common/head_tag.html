@@ -1,0 +1,148 @@
+<script type="text/discourse-plugin" version="0.4">
+const { iconNode } = require("discourse-common/lib/icon-library");
+
+const sp_settings = Discourse.SiteSettings;
+const default_provision = sp_settings.school_points_default_provision;
+const ial = sp_settings.school_points_icons_and_links;
+const provisionList = sp_settings.school_points_provisions;
+
+const showToggleResults = false;
+
+function assign(arr, vars) {
+    var x = {};
+    var num = Math.min(arr.length, vars.length);
+    for (var i = 0; i < num; ++i) {
+        x[vars[i]] = arr[i];
+    }
+    return x;
+}
+
+function getIconsAndLinks(provision){
+    /* jarjums:all:500:GG ABCCs:question:/c/jj-abccs/l/agenda:vdo:self */
+    var i = new Array();
+    
+    $.each( ial.split("|"), function( index, value ) {
+        elems = value.split(":");
+        x = assign(elems, ['provision','category','order','shortname','title','icon','link','cls','target'])
+        if (x.provision === provision) {
+            i.push(x);
+        }
+    });
+    i = i.sort( function(a, b)
+    {
+        return a.order - b.order
+    });
+    return i;
+}
+
+function getProvisionInitials(provision){
+    /* rainbow:all:100:RR,Rainbow Room Resource Provision  */
+    var i = new Array();
+    var provisionInitials = null;
+    
+    $.each( provisionList.split("|"), function( index, value ) {
+        if (provisionInitials === null) {
+            elems = value.split(":");
+            x = assign(elems, ['provision','category','order','initialsAndDescription']);
+            elems = x.initialsAndDescription.split(",")
+            y = assign(elems, ['initials', 'description']);
+    
+            if (x.provision.toLowerCase() === provision.toLowerCase()) {
+                provisionInitials = y.initials;
+            }
+        }
+    })
+    if (provisionInitials === null) {
+        return "??";
+    } else {
+        return provisionInitials;
+    }
+}
+
+api.decorateWidget("header-icons:before", helper => {
+  
+    const provision = 'galigir';
+    
+    function provisionName() {
+        const attrs = helper.attrs;
+        if (attrs.user && attrs.user.custom_fields && attrs.user.custom_fields.user_field_2) {
+            return attrs.user.custom_fields.user_field_2;
+        } else {
+            return "Wait...";
+        }
+    };
+    
+    function profileUrl(username) {
+        return "/u/"+username+"/preferences/profile"
+    };
+    
+    function linkToUserName() {
+        const attrs = helper.attrs;
+        
+        if (attrs.user && attrs.user.username) {
+            return profileUrl(attrs.user.username);
+        } else {
+            return "/";
+        }
+    };
+  
+    var icons = getIconsAndLinks(provisionName().toLowerCase()).map( i => {
+        return helper.h("li." + i.cls, [
+            helper.h(
+                "a.icon.btn-flat"+ ".provision-link-to-" + i.shortname,
+                {
+                    href: i.link,
+                    title: i.title,
+                    target: "_" + i.target
+                },
+                iconNode(i.icon.toLowerCase())
+            )
+        ]);
+    });
+    
+    var provisionInitials = getProvisionInitials(provisionName().toLowerCase());
+    
+    icons.push(
+        helper.h(
+            'li.vdm.provision-li',
+            /*
+            helper.h(
+                'span.provision-name.btn-primary.btn.btn-icon-text.d-button-label', 
+                "Checking..."
+            )
+            */
+            helper.h(
+                "a.link-to-user-profile",
+                {
+                    href: linkToUserName(),
+                    title: "Change provision"
+                },helper.h(
+                    'button.provision-button.btn.btn-default.btn.btn-icon-text',
+                    helper.h(
+                        'span.provision-name.d-button-label',
+                        /*provisionName()*/
+                        provisionInitials
+                    )
+                )
+            )
+        )
+    );
+    if (showToggleResults) {
+        icons.push(
+            helper.h(
+                'li.vdm.toggle-results-li',
+                helper.h(
+                    "a.toggle-results-link.icon.btn-flat",
+                    {
+    
+                        title: 'Toggle results'
+                    },iconNode('toggle-on')
+                )
+            )
+        )
+    }
+    return icons;
+});
+
+
+</script>
