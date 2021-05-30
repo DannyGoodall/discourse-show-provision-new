@@ -20,6 +20,8 @@ function assign(arr, vars) {
 function getIconsAndLinks(provision){
     /* jarjums:all:500:GG ABCCs:question:/c/jj-abccs/l/agenda:vdo:self */
     var i = new Array();
+    var elems = new Array();
+    var x = new Object();
     
     $.each( ial.split("|"), function( index, value ) {
         elems = value.split(":");
@@ -39,6 +41,9 @@ function getProvisionInitials(provision){
     /* rainbow:all:100:RR,Rainbow Room Resource Provision  */
     var i = new Array();
     var provisionInitials = null;
+    var elems = new Array();
+    var x = new Object();
+    var y = new Object();
     
     $.each( provisionList.split("|"), function( index, value ) {
         if (provisionInitials === null) {
